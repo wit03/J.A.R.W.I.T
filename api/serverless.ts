@@ -1,15 +1,13 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-// Require the framework
 import Fastify from "fastify";
 
-// Instantiate Fastify with some config
 const app = Fastify({
-  logger: false,
+  // logger: !!(process.env.NODE_ENV !== "development"),
+  logger: false
 });
 
-// Register your application as a normal plugin.
 app.register(import("../functions/index"), {
     prefix: '/'
 });
