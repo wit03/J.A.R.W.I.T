@@ -13,6 +13,7 @@
     "@vercel/node": "^1.11.1"
   },
   "dependencies": {
+    "@line/bot-sdk": "^7.5.0",
     "axios": "^0.27.2",
     "dotenv": "^10.0.0",
     "fastify": "^3.18.1"
