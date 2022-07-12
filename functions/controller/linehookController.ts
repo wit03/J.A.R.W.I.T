@@ -1,6 +1,6 @@
-import { channel } from "diagnostic_channel";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { client } from "../router";
+import messageHandler from "./features/messageHandler";
 
 const channelToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
@@ -17,11 +17,7 @@ export default async function linehookController(fastify: FastifyInstance) {
     } else if (event.source.userId !== process.env.LINE_USERID) {
       console.warn("Someone try to use your bot");
     } else {
-      console.log(event);
-      return client.replyMessage(event.replyToken, {
-        type: "text",
-        text: "Hi",
-      });
+        return messageHandler(event)
     }
   };
 }
