@@ -1,4 +1,3 @@
-import { type } from "os"
 import { client } from "../../router"
 import transactionLogHandler from "./transactionLogHandler"
 

@@ -1,16 +1,22 @@
 import { client } from "../../router";
+import Airtable from "airtable";
 
 const transactionLogHandler = (msg, token) => {
+  const ATbase = new Airtable({
+    apiKey: process.env.AIRTABLE_API,
+  }).base((process.env.AIRTABLE_BASE)!);
+
   const category = {
-    f: "Food",
+    f: "Foods",
     d: "Drinks",
-    t: "Transportation",
+    t: "Transportations",
     m: "Miscellaneous",
-    s: "Snack",
-    o: "Online Shopping",
+    s: "Snacks",
+    o: "Online Shoppings",
   };
-  var amount = msg.match(/\d+/g)[0];
-  var categoryType = category[msg.match(/[fdtmso]+/g)[0]];
+  var amount: number = +(msg.match(/\d+/g)[0]);
+  var categoryType: string = category[msg.match(/[fdtmso]+/g)[0]];
+  var date = JSON.stringify(new Date().toISOString().split("T")[0]);
 
   var result: any = {
     type: "bubble",
@@ -158,13 +164,47 @@ const transactionLogHandler = (msg, token) => {
         separator: true,
       },
     },
-  }
+  };
 
-  return client.replyMessage(token, {
-    type: "flex",
-    altText: "Paid " + amount + "฿ " + " for " + categoryType,
-    contents: result
-  })
+  const field = {
+    "fields": {
+      "Date": date,
+      "Category": categoryType,
+      "Amount": amount,
+    },
+  };
+
+  function writeToAirtable() {
+    return new Promise((resolve, reject) => {
+      ATbase('Expense Tracker').create([field], function(err, record) {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(record)
+      })
+    })
+    
+  }
+  
+  const replyLine = async () => {
+    return client.replyMessage(token, {
+      type: "text",
+      text: "Done" + JSON.stringify(await writeToAirtable()) 
+    })
+  } 
+
+  return replyLine()
+    
+
+
+  
+
+  // return client.replyMessage(token, {
+  //   type: "flex",
+  //   altText: "Paid " + amount + "฿" + " for " + categoryType,
+  //   contents: result,
+  // });
 };
 
 export default transactionLogHandler;
