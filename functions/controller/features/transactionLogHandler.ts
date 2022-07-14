@@ -18,6 +18,26 @@ const transactionLogHandler = (msg, token) => {
   var categoryType: string = category[msg.match(/[fdtmso]+/g)[0]];
   var date = JSON.stringify(new Date().toISOString().split("T")[0]);
 
+  const field = {
+    "fields": {
+      "Date": date,
+      "Category": categoryType,
+      "Amount": amount,
+    },
+  };
+
+  function writeToAirtable() {
+    return new Promise((resolve, reject) => {
+      ATbase("Expense Tracker").create([field], function (err, record) {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(record);
+      });
+    });
+  }
+
   var result: any = {
     type: "bubble",
     body: {
@@ -85,45 +105,7 @@ const transactionLogHandler = (msg, token) => {
                 },
                 {
                   type: "text",
-                  text: "50฿",
-                  size: "sm",
-                  color: "#111111",
-                  align: "end",
-                },
-              ],
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                {
-                  type: "text",
-                  text: "Today's Budget",
-                  size: "sm",
-                  color: "#555555",
-                },
-                {
-                  type: "text",
-                  text: "100฿",
-                  size: "sm",
-                  color: "#111111",
-                  align: "end",
-                },
-              ],
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                {
-                  type: "text",
-                  size: "sm",
-                  color: "#555555",
-                  text: "Today's left",
-                },
-                {
-                  type: "text",
-                  text: "50฿",
+                  text: "112฿",
                   size: "sm",
                   color: "#111111",
                   align: "end",
@@ -150,7 +132,7 @@ const transactionLogHandler = (msg, token) => {
             },
             {
               type: "text",
-              text: "12 July 2022",
+              text: date,
               color: "#aaaaaa",
               size: "xs",
               align: "end",
@@ -166,45 +148,17 @@ const transactionLogHandler = (msg, token) => {
     },
   };
 
-  const field = {
-    "fields": {
-      "Date": date,
-      "Category": categoryType,
-      "Amount": amount,
-    },
+  const replyLine = async () => {
+    await writeToAirtable();
+
+    return client.replyMessage(token, {
+      type: "flex",
+      altText: "Paid " + amount + "฿" + " for " + categoryType,
+      contents: result,
+    });
   };
 
-  function writeToAirtable() {
-    return new Promise((resolve, reject) => {
-      ATbase('Expense Tracker').create([field], function(err, record) {
-        if (err) {
-          reject(err);
-          return;
-        }
-        resolve(record)
-      })
-    })
-    
-  }
-  
-  const replyLine = async () => {
-    return client.replyMessage(token, {
-      type: "text",
-      text: "Done" + JSON.stringify(await writeToAirtable()) 
-    })
-  } 
-
-  return replyLine()
-    
-
-
-  
-
-  // return client.replyMessage(token, {
-  //   type: "flex",
-  //   altText: "Paid " + amount + "฿" + " for " + categoryType,
-  //   contents: result,
-  // });
+  return replyLine();
 };
 
 export default transactionLogHandler;
