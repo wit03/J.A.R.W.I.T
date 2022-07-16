@@ -16,7 +16,7 @@ const transactionLogHandler = (msg, token) => {
   };
   var amount: number = +(msg.match(/\d+/g)[0]);
   var categoryType: string = category[msg.match(/[fdtmso]+/g)[0]];
-  var date = JSON.stringify(new Date().toISOString().split("T")[0]);
+  var date = new Date().toISOString().split("T")[0];
 
   const field = {
     "fields": {
@@ -38,118 +38,143 @@ const transactionLogHandler = (msg, token) => {
     });
   }
 
-  var result: any = {
-    type: "bubble",
-    body: {
-      type: "box",
-      layout: "vertical",
-      contents: [
-        {
-          type: "text",
-          text: "Transaction Logger",
-          weight: "bold",
-          color: "#1DB446",
-          size: "sm",
-        },
-        {
-          type: "text",
-          text: "Paid",
-          weight: "bold",
-          size: "xxl",
-          margin: "md",
-        },
-        {
-          type: "separator",
-          margin: "xxl",
-        },
-        {
-          type: "box",
-          layout: "vertical",
-          margin: "xxl",
-          spacing: "sm",
-          contents: [
-            {
-              type: "box",
-              layout: "horizontal",
-              contents: [
-                {
-                  type: "text",
-                  text: categoryType,
-                  size: "sm",
-                  color: "#555555",
-                  flex: 0,
-                },
-                {
-                  type: "text",
-                  text: amount + "฿",
-                  size: "sm",
-                  color: "#111111",
-                  align: "end",
-                },
-              ],
-            },
-            {
-              type: "separator",
-              margin: "xxl",
-            },
-            {
-              type: "box",
-              layout: "horizontal",
-              margin: "xxl",
-              contents: [
-                {
-                  type: "text",
-                  text: "Today's Spending",
-                  size: "sm",
-                  color: "#555555",
-                },
-                {
-                  type: "text",
-                  text: "112฿",
-                  size: "sm",
-                  color: "#111111",
-                  align: "end",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: "separator",
-          margin: "xxl",
-        },
-        {
-          type: "box",
-          layout: "horizontal",
-          margin: "md",
-          contents: [
-            {
-              type: "text",
-              text: "Date",
-              size: "xs",
-              color: "#aaaaaa",
-              flex: 0,
-            },
-            {
-              type: "text",
-              text: date,
-              color: "#aaaaaa",
-              size: "xs",
-              align: "end",
-            },
-          ],
-        },
-      ],
-    },
-    styles: {
-      footer: {
-        separator: true,
-      },
-    },
-  };
+  async function getSpending() {
+    var data: any = [];
+    const records = await ATbase("Expense Tracker").select().all();
+    records.forEach((record) => {
+      data.push({
+        date: record.get("Date"),
+        amount: record.get("Amount"),
+      });
+    });
+
+    var dataTable = data.filter((list) => list.date === date); //sort data by date
+    var todaySpending = dataTable.map((item) => item.amount).reduce(
+      (prev, curr) => prev + curr,
+      0,
+    ); //some spending
+    return todaySpending;
+  }
+
+  
 
   const replyLine = async () => {
+    var spending = "";
+
     await writeToAirtable();
+    await getSpending().then((res) => {
+      spending = JSON.stringify(res);
+    });
+
+    var result: any = {
+      type: "bubble",
+      body: {
+        type: "box",
+        layout: "vertical",
+        contents: [
+          {
+            type: "text",
+            text: "Transaction Logger",
+            weight: "bold",
+            color: "#1DB446",
+            size: "sm",
+          },
+          {
+            type: "text",
+            text: "Paid",
+            weight: "bold",
+            size: "xxl",
+            margin: "md",
+          },
+          {
+            type: "separator",
+            margin: "xxl",
+          },
+          {
+            type: "box",
+            layout: "vertical",
+            margin: "xxl",
+            spacing: "sm",
+            contents: [
+              {
+                type: "box",
+                layout: "horizontal",
+                contents: [
+                  {
+                    type: "text",
+                    text: categoryType,
+                    size: "sm",
+                    color: "#555555",
+                    flex: 0,
+                  },
+                  {
+                    type: "text",
+                    text: amount + "฿",
+                    size: "sm",
+                    color: "#111111",
+                    align: "end",
+                  },
+                ],
+              },
+              {
+                type: "separator",
+                margin: "xxl",
+              },
+              {
+                type: "box",
+                layout: "horizontal",
+                margin: "xxl",
+                contents: [
+                  {
+                    type: "text",
+                    text: "Today's Spending",
+                    size: "sm",
+                    color: "#555555",
+                  },
+                  {
+                    type: "text",
+                    text: spending + "฿",
+                    size: "sm",
+                    color: "#111111",
+                    align: "end",
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "separator",
+            margin: "xxl",
+          },
+          {
+            type: "box",
+            layout: "horizontal",
+            margin: "md",
+            contents: [
+              {
+                type: "text",
+                text: "Date",
+                size: "xs",
+                color: "#aaaaaa",
+                flex: 0,
+              },
+              {
+                type: "text",
+                text: date,
+                color: "#aaaaaa",
+                size: "xs",
+                align: "end",
+              },
+            ],
+          },
+        ],
+      },
+      styles: {
+        footer: {
+          separator: true,
+        },
+      },
+    };
 
     return client.replyMessage(token, {
       type: "flex",

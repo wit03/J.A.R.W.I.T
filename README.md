@@ -3,6 +3,11 @@
 
 ## What It can do?
 - Logging transactions
+## Road Map
+ - Google Calendar intergration for creating events
+ - QuickDraw to draw something and shares it into group using Line Liff
+ - 
+
 ## What I have learned from this project?
 - RegEx
 - Line Chat Bot
