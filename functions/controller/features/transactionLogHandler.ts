@@ -13,9 +13,11 @@ const transactionLogHandler = (msg, token) => {
     m: "Miscellaneous",
     s: "Snacks",
     o: "Online Shoppings",
+    l: "Liqueurs",
+    a: "Alcohol"
   };
   var amount: number = +(msg.match(/\d+/g)[0]);
-  var categoryType: string = category[msg.match(/[fdtmso]+/g)[0]];
+  var categoryType: string = category[msg.match(/[fdtmsola]+/g)[0]];
   var date = new Date().toISOString().split("T")[0];
 
   const field = {

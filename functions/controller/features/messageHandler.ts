@@ -4,7 +4,7 @@ import transactionLogHandler from "./transactionLogHandler"
 const messageHandler = (event) => {
     var msg = event.message.text
     var token = event.replyToken
-    if(msg.match(/^([\d.]+)(j?)([fdtmso])$/i)) { //match transaction record
+    if(msg.match(/^([\d.]+)(j?)([fdtmsola])$/i)) { //match transaction record
         return transactionLogHandler(msg, token)
     } else {
         return client.replyMessage(token, {
