@@ -19,7 +19,7 @@ const transactionLogHandler = (msg, token) => {
   var amount: number = +(msg.match(/\d+/g)[0]);
   var categoryType: string = category[msg.match(/[fdtmsola]+/g)[0]];
   var date = new Date().toISOString().split("T")[0];
-
+  var month = new Date().toISOString().split("T")[0].split("-")[1]
   const field = {
     "fields": {
       "Date": date,
@@ -50,22 +50,21 @@ const transactionLogHandler = (msg, token) => {
       });
     });
 
-    var dataTable = data.filter((list) => list.date === date); //sort data by date
-    var todaySpending = dataTable.map((item) => item.amount).reduce(
-      (prev, curr) => prev + curr,
-      0,
-    ); //some spending
-    return todaySpending;
+    var dateTable = data.filter((list) => list.date === date); //filter data by date
+    var monthTable = data.filter((list) => list.date.split("-")[1] == month) // filter data by month
+    var todaySpending = dateTable.map((item) => item.amount).reduce((prev, curr) => prev + curr,0,); //some spending
+    var monthSpending = monthTable.map((item) => item.amount).reduce((prev, curr) => prev + curr,0,); //some spending
+    return { todaySpending, monthSpending };
   }
 
-  
-
   const replyLine = async () => {
-    var spending = "";
+    var dailySpending = "";
+    var monthlySpending = ""
 
     await writeToAirtable();
     await getSpending().then((res) => {
-      spending = JSON.stringify(res);
+      dailySpending = JSON.stringify(res.todaySpending);
+      monthlySpending = JSON.stringify(res.monthSpending);
     });
 
     var result: any = {
@@ -135,13 +134,33 @@ const transactionLogHandler = (msg, token) => {
                   },
                   {
                     type: "text",
-                    text: spending + "฿",
+                    text: dailySpending + "฿",
                     size: "sm",
                     color: "#111111",
                     align: "end",
                   },
                 ],
               },
+              {
+                type: "box",
+                layout: "horizontal",
+                margin: "xxl",
+                contents: [
+                  {
+                    type: "text",
+                    text: "Month's Spending",
+                    size: "sm",
+                    color: "#555555",
+                  },
+                  {
+                    type: "text",
+                    text: monthlySpending + "฿",
+                    size: "sm",
+                    color: "#111111",
+                    align: "end",
+                  },
+                ],
+              }
             ],
           },
           {
