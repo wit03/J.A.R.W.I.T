@@ -10,13 +10,13 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@vercel/node": "^2.4.2"
+    "@vercel/node": "^2.5.22"
   },
   "dependencies": {
-    "@line/bot-sdk": "^7.5.0",
+    "@line/bot-sdk": "^7.5.2",
     "airtable": "^0.11.4",
-    "axios": "^0.27.2",
-    "dotenv": "^16.0.1",
-    "fastify": "^3.18.1"
+    "axios": "^1.1.0",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.7.0"
   }
 }
